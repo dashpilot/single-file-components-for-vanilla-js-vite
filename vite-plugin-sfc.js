@@ -1,9 +1,10 @@
 /**
  * Vite plugin for single-file components
- * Matches the original build script behavior:
- * - Combines all scripts into app.min.js
- * - Combines all styles into app.min.css
+ * Matches the original build.js behavior exactly:
+ * - Combines all scripts into app.min.js (no wrapping)
+ * - Combines all styles into app.min.css (minified)
  * - Generates template injection code for DOM elements
+ * - Dev mode: JS not minified, Production: JS minified
  */
 
 import fs from 'fs';
@@ -22,12 +23,15 @@ export default function sfcPlugin() {
 		template: ''
 	};
 
+	let isDev = true;
+
 	return {
 		name: 'vite-plugin-sfc',
 		enforce: 'pre',
 
 		// Build start - read all components
 		buildStart() {
+			isDev = false; // Production build
 			const componentsDir = path.resolve(process.cwd(), 'src/components');
 
 			if (!fs.existsSync(componentsDir)) {
@@ -42,7 +46,7 @@ export default function sfcPlugin() {
 			});
 		},
 
-		// Write bundle - output combined files
+		// Write bundle - output combined files (production build)
 		async writeBundle(options) {
 			const outDir = options.dir || 'dist';
 			const assetsDir = path.join(outDir, 'assets');
@@ -52,7 +56,7 @@ export default function sfcPlugin() {
 				fs.mkdirSync(assetsDir, { recursive: true });
 			}
 
-			// Minify and write CSS
+			// Minify and write CSS (always minified)
 			if (data.style) {
 				const cssOutput = new CleanCSS().minify(data.style);
 				fs.writeFileSync(path.join(assetsDir, 'app.min.css'), cssOutput.styles, 'utf8');
@@ -61,16 +65,16 @@ export default function sfcPlugin() {
 			// Combine template and script code
 			const combined = data.template + ' ' + data.script;
 
-			// Minify JS (always minify in production build)
+			// Minify JS in production (matches original build.js with sourceMap: true)
 			const jsResult = await minify(combined, {
-				sourceMap: false
+				sourceMap: true
 			});
-
 			fs.writeFileSync(path.join(assetsDir, 'app.min.js'), jsResult.code, 'utf8');
 		},
 
 		// Dev mode - write files to public/assets
 		configureServer(server) {
+			isDev = true; // Dev mode
 			const componentsDir = path.resolve(process.cwd(), 'src/components');
 			const publicDir = path.resolve(process.cwd(), 'public');
 			const assetsDir = path.join(publicDir, 'assets');
@@ -101,7 +105,7 @@ export default function sfcPlugin() {
 			}
 
 			// Write files on server start (async)
-			writeDevFiles(assetsDir, data).catch((err) => {
+			writeDevFiles(assetsDir, data, isDev).catch((err) => {
 				console.error('Error writing dev files:', err);
 			});
 
@@ -121,7 +125,7 @@ export default function sfcPlugin() {
 							extractTags(filepath, data);
 						});
 
-						writeDevFiles(assetsDir, data).catch((err) => {
+						writeDevFiles(assetsDir, data, isDev).catch((err) => {
 							console.error('Error writing dev files:', err);
 						});
 
@@ -137,7 +141,7 @@ export default function sfcPlugin() {
 }
 
 /**
- * Extract tags from component file (matches original behavior)
+ * Extract tags from component file (matches original build.js exactly)
  */
 function extractTags(filepath, data) {
 	const file = fs.readFileSync(filepath, 'utf8');
@@ -145,55 +149,47 @@ function extractTags(filepath, data) {
 
 	const root = parse(file);
 
-	// Generate template injection code (runs first to inject HTML)
+	// Generate template injection code (matches original)
 	if (root.querySelector('template')) {
-		const templateHTML = root.querySelector('template').innerHTML.replace(/\s\s+/g, ' ');
 		data.template +=
 			'document.querySelectorAll("' +
 			filename +
 			'").forEach(function(e){' +
 			'e.innerHTML = `' +
-			templateHTML +
+			root.querySelector('template').innerHTML.replace(/\s\s+/g, ' ') +
 			'`' +
 			'})\n';
 	}
 
-	// Wrap script content with querySelectorAll (runs after template injection)
+	// Scripts run globally (no wrapping) - matches original build.js
 	if (root.querySelector('script')) {
-		const scriptContent = root.querySelector('script').text.trim();
-		if (scriptContent) {
-			// Use component name as variable name in forEach
-			// Note: Component names should be valid JavaScript identifiers (no hyphens)
-			data.script +=
-				'document.querySelectorAll("' +
-				filename +
-				'").forEach(function(' +
-				filename +
-				'){' +
-				scriptContent +
-				'})\n';
-		}
+		data.script += root.querySelector('script').text + '\n';
 	}
 
+	// Styles combined
 	if (root.querySelector('style')) {
 		data.style += root.querySelector('style').text;
 	}
 }
 
 /**
- * Write dev files (minified to match original behavior)
+ * Write dev files (matches original build.js behavior)
  */
-async function writeDevFiles(assetsDir, data) {
-	// Write CSS (minified)
+async function writeDevFiles(assetsDir, data, isDev) {
+	// Write CSS (always minified)
 	if (data.style) {
 		const cssOutput = new CleanCSS().minify(data.style);
 		fs.writeFileSync(path.join(assetsDir, 'app.min.css'), cssOutput.styles, 'utf8');
 	}
 
-	// Write JS (minified)
+	// Write JS (not minified in dev mode, matches original)
 	const combined = data.template + ' ' + data.script;
-	const jsResult = await minify(combined, {
-		sourceMap: false
-	});
-	fs.writeFileSync(path.join(assetsDir, 'app.min.js'), jsResult.code, 'utf8');
+	if (isDev) {
+		fs.writeFileSync(path.join(assetsDir, 'app.min.js'), combined, 'utf8');
+	} else {
+		const jsResult = await minify(combined, {
+			sourceMap: true
+		});
+		fs.writeFileSync(path.join(assetsDir, 'app.min.js'), jsResult.code, 'utf8');
+	}
 }
