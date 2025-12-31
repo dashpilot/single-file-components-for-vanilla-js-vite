@@ -1,0 +1,114 @@
+<template>
+	<div class="counter">
+		<h3>Counter Component</h3>
+		<div class="counter-display">
+			<span class="counter-value">0</span>
+		</div>
+		<div class="counter-controls">
+			<button class="counter-btn counter-btn-decrement">-</button>
+			<button class="counter-btn counter-btn-reset">Reset</button>
+			<button class="counter-btn counter-btn-increment">+</button>
+		</div>
+	</div>
+</template>
+
+<script>
+	// Component logic - runs for all counter elements
+	document.querySelectorAll('counter').forEach(function (counter) {
+		let count = 0;
+		const counterEl = counter.querySelector('.counter');
+		if (!counterEl) return;
+
+		const valueEl = counterEl.querySelector('.counter-value');
+		const decrementBtn = counterEl.querySelector('.counter-btn-decrement');
+		const incrementBtn = counterEl.querySelector('.counter-btn-increment');
+		const resetBtn = counterEl.querySelector('.counter-btn-reset');
+
+		const updateDisplay = function () {
+			valueEl.textContent = count;
+		};
+
+		decrementBtn.addEventListener('click', function () {
+			count--;
+			updateDisplay();
+		});
+
+		incrementBtn.addEventListener('click', function () {
+			count++;
+			updateDisplay();
+		});
+
+		resetBtn.addEventListener('click', function () {
+			count = 0;
+			updateDisplay();
+		});
+
+		updateDisplay();
+	});
+</script>
+
+<style>
+	counter {
+		display: block;
+	}
+
+	.counter {
+		padding: 20px;
+		border: 2px solid #4caf50;
+		border-radius: 8px;
+		text-align: center;
+		max-width: 300px;
+		margin: 20px auto;
+		background: #f9f9f9;
+	}
+
+	.counter h3 {
+		margin-top: 0;
+		color: #4caf50;
+	}
+
+	.counter-display {
+		margin: 20px 0;
+	}
+
+	.counter-value {
+		font-size: 48px;
+		font-weight: bold;
+		color: #333;
+		display: inline-block;
+		min-width: 80px;
+	}
+
+	.counter-controls {
+		display: flex;
+		gap: 8px;
+		justify-content: center;
+	}
+
+	.counter-btn {
+		padding: 10px 20px;
+		font-size: 18px;
+		border: none;
+		border-radius: 4px;
+		cursor: pointer;
+		background: #4caf50;
+		color: white;
+		transition: background 0.2s;
+	}
+
+	.counter-btn:hover {
+		background: #45a049;
+	}
+
+	.counter-btn:active {
+		transform: scale(0.95);
+	}
+
+	.counter-btn-reset {
+		background: #ff9800;
+	}
+
+	.counter-btn-reset:hover {
+		background: #e68900;
+	}
+</style>
