@@ -157,7 +157,3 @@ This Vite plugin:
 │   └── index.html
 └── dist/                # Production build output
 ```
-
-## License
-
-Same as the original project.
