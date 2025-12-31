@@ -67,17 +67,16 @@ Create `.html` files in `src/components/` with the following structure:
 
 <script>
 	// Your component logic
-	// Scripts run globally and can find elements by tag name
-	document.querySelectorAll('my-component').forEach(function (el) {
-		// Work with each instance
-		const innerEl = el.querySelector('.my-component');
-		// ... your logic
-	});
+	// The build script automatically wraps this with:
+	// document.querySelectorAll('mywidget').forEach(function(mywidget) { ... })
+	// So you can use the component name (filename) as the element variable
+	const innerEl = mywidget.querySelector('.my-component');
+	// ... your logic
 </script>
 
 <style>
 	/* Your component styles */
-	my-component {
+	mywidget {
 		display: block;
 	}
 

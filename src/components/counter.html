@@ -13,38 +13,36 @@
 </template>
 
 <script>
-	// Component logic - runs for all counter elements
-	document.querySelectorAll('counter').forEach(function (counter) {
-		let count = 0;
-		const counterEl = counter.querySelector('.counter');
-		if (!counterEl) return;
+	// Component logic - this will be wrapped by the build script
+	let count = 0;
+	const counterEl = counter.querySelector('.counter');
+	if (!counterEl) return;
 
-		const valueEl = counterEl.querySelector('.counter-value');
-		const decrementBtn = counterEl.querySelector('.counter-btn-decrement');
-		const incrementBtn = counterEl.querySelector('.counter-btn-increment');
-		const resetBtn = counterEl.querySelector('.counter-btn-reset');
+	const valueEl = counterEl.querySelector('.counter-value');
+	const decrementBtn = counterEl.querySelector('.counter-btn-decrement');
+	const incrementBtn = counterEl.querySelector('.counter-btn-increment');
+	const resetBtn = counterEl.querySelector('.counter-btn-reset');
 
-		const updateDisplay = function () {
-			valueEl.textContent = count;
-		};
+	const updateDisplay = function () {
+		valueEl.textContent = count;
+	};
 
-		decrementBtn.addEventListener('click', function () {
-			count--;
-			updateDisplay();
-		});
-
-		incrementBtn.addEventListener('click', function () {
-			count++;
-			updateDisplay();
-		});
-
-		resetBtn.addEventListener('click', function () {
-			count = 0;
-			updateDisplay();
-		});
-
+	decrementBtn.addEventListener('click', function () {
+		count--;
 		updateDisplay();
 	});
+
+	incrementBtn.addEventListener('click', function () {
+		count++;
+		updateDisplay();
+	});
+
+	resetBtn.addEventListener('click', function () {
+		count = 0;
+		updateDisplay();
+	});
+
+	updateDisplay();
 </script>
 
 <style>

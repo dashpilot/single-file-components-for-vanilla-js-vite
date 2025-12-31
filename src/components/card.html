@@ -13,23 +13,21 @@
 </template>
 
 <script>
-	// Component logic - runs for all card elements
-	document.querySelectorAll('card').forEach(function (card) {
-		const title = card.getAttribute('title') || 'Default Title';
-		const content = card.getAttribute('content') || 'Default content goes here.';
+	// Component logic - this will be wrapped by the build script
+	const title = card.getAttribute('title') || 'Default Title';
+	const content = card.getAttribute('content') || 'Default content goes here.';
 
-		// Update template with actual values
-		const cardEl = card.querySelector('.card');
-		if (cardEl) {
-			cardEl.querySelector('.card-title').textContent = title;
-			cardEl.querySelector('.card-content').textContent = content;
+	// Update template with actual values
+	const cardEl = card.querySelector('.card');
+	if (cardEl) {
+		cardEl.querySelector('.card-title').textContent = title;
+		cardEl.querySelector('.card-content').textContent = content;
 
-			// Add click handler
-			cardEl.querySelector('.card-button').addEventListener('click', function () {
-				alert('Clicked on ' + title + '!');
-			});
-		}
-	});
+		// Add click handler
+		cardEl.querySelector('.card-button').addEventListener('click', function () {
+			alert('Clicked on ' + title + '!');
+		});
+	}
 </script>
 
 <style>

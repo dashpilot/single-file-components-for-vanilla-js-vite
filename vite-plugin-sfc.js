@@ -145,6 +145,7 @@ function extractTags(filepath, data) {
 
 	const root = parse(file);
 
+	// Generate template injection code (runs first to inject HTML)
 	if (root.querySelector('template')) {
 		const templateHTML = root.querySelector('template').innerHTML.replace(/\s\s+/g, ' ');
 		data.template +=
@@ -157,8 +158,21 @@ function extractTags(filepath, data) {
 			'})\n';
 	}
 
+	// Wrap script content with querySelectorAll (runs after template injection)
 	if (root.querySelector('script')) {
-		data.script += root.querySelector('script').text + '\n';
+		const scriptContent = root.querySelector('script').text.trim();
+		if (scriptContent) {
+			// Use component name as variable name in forEach
+			// Note: Component names should be valid JavaScript identifiers (no hyphens)
+			data.script +=
+				'document.querySelectorAll("' +
+				filename +
+				'").forEach(function(' +
+				filename +
+				'){' +
+				scriptContent +
+				'})\n';
+		}
 	}
 
 	if (root.querySelector('style')) {
